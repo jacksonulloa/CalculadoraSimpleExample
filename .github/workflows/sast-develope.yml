@@ -1,0 +1,39 @@
+name: Develop - SAST Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  sast:
+    name: SAST CodeQL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: csharp
+          queries: security-extended
+
+      - name: Restaurar dependencias
+        run: dotnet restore
+
+      - name: Compilar solución para análisis
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Ejecutar análisis SAST
+        uses: github/codeql-action/analyze@v4
